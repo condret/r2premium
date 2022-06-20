@@ -11,6 +11,14 @@ make; make install
 Don't forget to update your ~/.radare2rc
 
 
+## Uninstall
+
+```bash
+make; make uninstall
+```
+But why would you want to do that?
+
+
 ## TODO
 
 r2pm pkg

@@ -1,7 +1,6 @@
 #include <r_util.h>
 
-
-int main () {
+int install () {
 #if 0
 	// segfault area
 	char *path_creepy = r_file_new (".", "fortunes", "fortunes.creepy");
@@ -34,4 +33,32 @@ int main () {
 	free (path_creepy);
 	free (path_nsfw);
 	return 0;
+}
+
+int uninstall () {
+	char *path_creepy = r_str_home (R_JOIN_2_PATHS (R2_HOME_FORTUNES, "fortunes.creepy"));
+	char *path_nsfw = r_str_home (R_JOIN_2_PATHS (R2_HOME_FORTUNES, "fortunes.nsfw"));
+	if (r_file_is_regular (path_creepy)) {
+		r_file_rm (path_creepy);
+	}
+	free (path_creepy);
+	if (r_file_is_regular (path_nsfw)) {
+		r_file_rm (path_nsfw);
+	}
+	free (path_nsfw);
+	return 0;
+}
+
+int main (int argc, char *argv[]) {
+	if (argc < 2 || (strcmp (argv[1], "-i") && strcmp (argv[1] , "-u"))) {
+		eprintf ("Wat do?\n");
+		return -1;
+	}
+	if (!strcmp (argv[1], "-i")) {
+		return install ();
+	}
+	if (!strcmp (argv[1], "-u")) {
+		return uninstall ();
+	}
+	return -1;
 }
