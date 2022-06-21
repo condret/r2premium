@@ -1,14 +1,8 @@
 #include <r_util.h>
 
 int install () {
-#if 0
-	// segfault area
-	char *path_creepy = r_file_new (".", "fortunes", "fortunes.creepy");
-	char *path_nsfw = r_file_new (".", "fortunes", "fortunes.nsfw");
-#else
-	char *path_creepy = strdup (R_JOIN_2_PATHS ("fortunes", "fortunes.creepy"));
-	char *path_nsfw = strdup (R_JOIN_2_PATHS ("fortunes", "fortunes.nsfw"));
-#endif	
+	char *path_creepy = r_file_new (".", "fortunes", "fortunes.creepy", NULL);
+	char *path_nsfw = r_file_new (".", "fortunes", "fortunes.nsfw", NULL);
 	if (!r_file_is_regular (path_creepy) || !r_file_is_regular (path_nsfw)) {
 		free (path_creepy);
 		free (path_nsfw);
@@ -36,12 +30,12 @@ int install () {
 }
 
 int uninstall () {
-	char *path_creepy = r_str_home (R_JOIN_2_PATHS (R2_HOME_FORTUNES, "fortunes.creepy"));
-	char *path_nsfw = r_str_home (R_JOIN_2_PATHS (R2_HOME_FORTUNES, "fortunes.nsfw"));
+	char *path_creepy = r_file_new ("~", R2_HOME_FORTUNES, "fortunes.creepy", NULL);
 	if (r_file_is_regular (path_creepy)) {
 		r_file_rm (path_creepy);
 	}
 	free (path_creepy);
+	char *path_nsfw = r_file_new ("~", R2_HOME_FORTUNES, "fortunes.nsfw", NULL);
 	if (r_file_is_regular (path_nsfw)) {
 		r_file_rm (path_nsfw);
 	}
