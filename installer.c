@@ -26,6 +26,26 @@ int install () {
 	free (fortune_dir);
 	free (path_creepy);
 	free (path_nsfw);
+	char *path_core_premium = r_file_new (".", "core_r2premium.so", NULL);
+	if (!r_file_is_regular (path_core_premium)) {
+		eprintf ("missing core_r2premium.so\n");
+		free (path_core_premium);
+		return 0;
+	}
+	char *plugin_dir = r_str_home (R2_HOME_PLUGINS);
+	if (!r_file_is_directory (plugin_dir)) {
+		if (r_file_is_regular (plugin_dir)) {
+			free (path_core_premium);
+			free (plugin_dir);
+			eprintf ("wtf2\n");
+			return 0;
+		} else {
+			r_sys_mkdir (plugin_dir);
+		}
+	}
+	r_file_copy (path_core_premium, plugin_dir);
+	free (plugin_dir);
+	free (path_core_premium);
 	return 0;
 }
 
@@ -40,6 +60,11 @@ int uninstall () {
 		r_file_rm (path_nsfw);
 	}
 	free (path_nsfw);
+	char *path_core_premium = r_file_new ("~", R2_HOME_PLUGINS, "core_r2premium.so", NULL);
+	if (r_file_is_regular (path_core_premium)) {
+		r_file_rm (path_core_premium);
+	}
+	free (path_core_premium);
 	return 0;
 }
 
