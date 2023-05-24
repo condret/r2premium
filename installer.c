@@ -9,7 +9,11 @@ int install () {
 		eprintf ("missing fortune files\n");
 		return -1;
 	}
+#ifdef	R2_HOME_FORTUNES
 	char *fortune_dir = r_str_home (R2_HOME_FORTUNES);
+#else
+	char *fortune_dir = r_xdg_datadir ("fortunes");
+#endif
 	if (!r_file_is_directory (fortune_dir)) {
 		if (r_file_is_regular (fortune_dir)) {
 			free (path_creepy);
@@ -32,7 +36,11 @@ int install () {
 		free (path_core_premium);
 		return 0;
 	}
+#ifdef	R2_HOME_PLUGINS
 	char *plugin_dir = r_str_home (R2_HOME_PLUGINS);
+#else
+	char *plugin_dir = r_xdg_datadir ("plugins");
+#endif
 	if (!r_file_is_directory (plugin_dir)) {
 		if (r_file_is_regular (plugin_dir)) {
 			free (path_core_premium);
@@ -50,17 +58,34 @@ int install () {
 }
 
 int uninstall () {
+#ifdef	R2_HOME_FORTUNES
 	char *path_creepy = r_file_new ("~", R2_HOME_FORTUNES, "fortunes.creepy", NULL);
+#else
+	char *path_fortunes = r_xdg_datadir ("fortunes");
+	char *path_creepy = r_file_new (path_fortunes, "fortunes.creepy", NULL);
+#endif
 	if (r_file_is_regular (path_creepy)) {
 		r_file_rm (path_creepy);
 	}
 	free (path_creepy);
+#ifdef	R2_HOME_FORTUNES
 	char *path_nsfw = r_file_new ("~", R2_HOME_FORTUNES, "fortunes.nsfw", NULL);
+#else
+	char *path_nsfw = r_file_new (path_fortunes, "fortunes.nsfw", NULL);
+	free (path_fortunes);
+#endif
 	if (r_file_is_regular (path_nsfw)) {
 		r_file_rm (path_nsfw);
 	}
 	free (path_nsfw);
+#ifdef	R2_HOME_PLUGINS
 	char *path_core_premium = r_file_new ("~", R2_HOME_PLUGINS, "core_r2premium.so", NULL);
+#else
+	char *path_plugins = r_xdg_datadir ("plugins");
+	char *path_core_premium = r_file_new (path_plugins, "core_r2premium.so", NULL);
+	free (path_plugins);
+#endif
+	
 	if (r_file_is_regular (path_core_premium)) {
 		r_file_rm (path_core_premium);
 	}
