@@ -1,14 +1,8 @@
+#include <stdio.h>
 #include <r_util.h>
+#include "fortunes.h"
 
-int install () {
-	char *path_creepy = r_file_new (".", "fortunes", "fortunes.creepy", NULL);
-	char *path_nsfw = r_file_new (".", "fortunes", "fortunes.nsfw", NULL);
-	if (!r_file_is_regular (path_creepy) || !r_file_is_regular (path_nsfw)) {
-		free (path_creepy);
-		free (path_nsfw);
-		eprintf ("missing fortune files\n");
-		return -1;
-	}
+int install_fortunes () {
 #ifdef	R2_HOME_FORTUNES
 	char *fortune_dir = r_str_home (R2_HOME_FORTUNES);
 #else
@@ -16,8 +10,6 @@ int install () {
 #endif
 	if (!r_file_is_directory (fortune_dir)) {
 		if (r_file_is_regular (fortune_dir)) {
-			free (path_creepy);
-			free (path_nsfw);
 			free (fortune_dir);
 			eprintf ("wtf\n");
 			return -1;
@@ -25,16 +17,62 @@ int install () {
 			r_sys_mkdir (fortune_dir);
 		}
 	}
-	r_file_copy (path_creepy, fortune_dir);
-	r_file_copy (path_nsfw, fortune_dir);
-	free (fortune_dir);
-	free (path_creepy);
-	free (path_nsfw);
+	int ret = 0;
+	ut32 i;
+	for (i = 0; fortunes[i]; i++) {
+		char ffname[256];	//fortune file name
+		snprintf (ffname, 256, "fortunes.%s", fortunes[i]);
+		char *path = r_file_new (".", "fortunes", ffname, NULL);
+		if (!path) {
+			eprintf ("allocation failed\n");
+			ret = -1;
+			continue;
+		}
+		if (!r_file_is_regular (path)) {
+			eprintf ("missing fortune file %s\n", path);
+			free (path);
+			ret = -1;
+			continue;
+		}
+		r_file_copy (path, fortune_dir);
+		free (path);
+	}
+	return ret;
+}
+
+int uninstall_fortunes () {
+#ifdef	R2_HOME_FORTUNES
+	char *fortune_dir = r_str_home (R2_HOME_FORTUNES);
+#else
+	char *fortune_dir = r_xdg_datadir ("fortunes");
+#endif
+	if (!r_file_is_directory (fortune_dir)) {
+		return 0;
+	}
+	ut32 i;
+	for (i = 0; fortunes[i]; i++) {
+		char ffname[256];	//fortune file name
+		snprintf (ffname, 256, "fortunes.%s", fortunes[i]);
+		char *path = r_file_new (fortune_dir, ffname, NULL);
+		if (!path) {
+			eprintf ("allocation failed\n");
+			continue;
+		}
+		if (r_file_is_regular (path)) {
+			r_file_rm (path);
+		}
+		free (path);
+	}
+	return 0;
+}
+
+int install () {
+	int ret = install_fortunes ();
 	char *path_core_premium = r_file_new (".", "core_r2premium.so", NULL);
 	if (!r_file_is_regular (path_core_premium)) {
 		eprintf ("missing core_r2premium.so\n");
 		free (path_core_premium);
-		return 0;
+		return -1;
 	}
 #ifdef	R2_HOME_PLUGINS
 	char *plugin_dir = r_str_home (R2_HOME_PLUGINS);
@@ -46,7 +84,7 @@ int install () {
 			free (path_core_premium);
 			free (plugin_dir);
 			eprintf ("wtf2\n");
-			return 0;
+			return -1;
 		} else {
 			r_sys_mkdir (plugin_dir);
 		}
@@ -54,30 +92,11 @@ int install () {
 	r_file_copy (path_core_premium, plugin_dir);
 	free (plugin_dir);
 	free (path_core_premium);
-	return 0;
+	return ret;
 }
 
 int uninstall () {
-#ifdef	R2_HOME_FORTUNES
-	char *path_creepy = r_file_new ("~", R2_HOME_FORTUNES, "fortunes.creepy", NULL);
-#else
-	char *path_fortunes = r_xdg_datadir ("fortunes");
-	char *path_creepy = r_file_new (path_fortunes, "fortunes.creepy", NULL);
-#endif
-	if (r_file_is_regular (path_creepy)) {
-		r_file_rm (path_creepy);
-	}
-	free (path_creepy);
-#ifdef	R2_HOME_FORTUNES
-	char *path_nsfw = r_file_new ("~", R2_HOME_FORTUNES, "fortunes.nsfw", NULL);
-#else
-	char *path_nsfw = r_file_new (path_fortunes, "fortunes.nsfw", NULL);
-	free (path_fortunes);
-#endif
-	if (r_file_is_regular (path_nsfw)) {
-		r_file_rm (path_nsfw);
-	}
-	free (path_nsfw);
+	uninstall_fortunes ();
 #ifdef	R2_HOME_PLUGINS
 	char *path_core_premium = r_file_new ("~", R2_HOME_PLUGINS, "core_r2premium.so", NULL);
 #else
