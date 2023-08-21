@@ -57,9 +57,17 @@ beach:
 }
 
 RCorePlugin r_core_plugin_r2premium = {
+#if R2_VERSION_NUMBER > 50808
+	.meta = {
+		.name = "r2premium",
+		.desc = "r2premium core plugin",
+		.license = "BSD",
+	},
+#else
 	.name = "r2premium",
 	.desc = "r2premium core plugin",
 	.license = "BSD",
+#endif
 	.call = r_cmd_r2premium_call,
 };
 
